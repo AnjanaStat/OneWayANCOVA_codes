@@ -1,0 +1,120 @@
+rm(list=ls())
+library(matrixcalc)
+install.packages("Matrix")
+library(Matrix)
+library(smoothmest)
+n1=10;n2=10;n3=10;n4=25;b1=0.1;b2=0.2;b3=0.3;b4=1;p=1;v1=0.5;v2=0.8;v3=1;v4=1
+
+fun1<-function(n1,n2,n3,p,v1,v2,v3)
+{
+  h1=10/(n1-1);h2=10/(n2-1);h3=5/(n3-1)
+  X1=seq(-5,5,h1);X2=seq(-5,5,h2);X3=seq(0,5,h3)
+  Y1=rnorm(n1,p*X1,sqrt(v1));Y2=rnorm(n2,p*X2,sqrt(v2))
+  Y3=rnorm(n3,p*X3,sqrt(v3))
+  y1=mean(Y1);y2=mean(Y2);y3=mean(Y3)
+  x1=mean(X1);x2=mean(X2);x3=mean(X3)
+  p1=sum((X1-x1)*(Y1-y1));p2=sum((X2-x2)*(Y2-y2));p3=sum((X3-x3)*(Y3-y3))
+  q1=sum((Y1-y1)^2);q2=sum((Y2-y2)^2);q3=sum((Y3-y3)^2)
+  r1=sum((X1-x1)^2);r2=sum((X2-x2)^2);r3=sum((X3-x3)^2)
+  S1=q1/(n1-2)-(p1^2)/((n1-2)*r1);S2=q2/(n2-2)-(p2^2)/((n2-2)*r2)
+  S3=q3/(n3-2)-(p3^2)/((n3-2)*r3)
+  bnu=p1+p2+p3;bdno=r1+r2+r3
+  b=bnu/bdno
+  a1=y1-b*x1;a2=y2-b*x2;a3=y3-b*x3
+  phinu=S1*r1+S2*r2+S3*r3
+  phidn=(r1+r2+r3)^2
+  phi=phinu/phidn
+  V1=(S1/n1 +S2/n2 +phi*(x1-x2)^2);V2=(S2/n2 +S3/n3 +phi*(x2-x3)^2)
+  T1=(a2-a1)/sqrt(V1);T2=(a3-a2)/sqrt(V2)
+  T=max(T1,T2)
+  return(T)
+}
+
+fun2<-function(n1,n2,n3,p,v1,v2,v3)
+{
+  x<-replicate(500,fun1(n1,n2,n3,p,v1,v2,v3))
+  y<-sort(x,decreasing=FALSE)
+  c<-y[475]
+  return(c)
+}
+
+fun3<-function(n1,n2,n3,mu1,mu2,mu3,p,v1,v2,v3)
+{
+  h1=10/(n1-1);h2=10/(n2-1);h3=5/(n3-1);h4=(-2/(n4-1))
+  X1=seq(-5,5,h1);X2=seq(-5,5,h2);X3=seq(0,5,h3);X4=seq(-2,-4,h4)
+  Y1=rnorm(n1,mu1+p*X1,sqrt(v1));Y2=rnorm(n2,mu2+p*X2,sqrt(v2))
+  Y3=rnorm(n3,mu3+p*X3,sqrt(v3))
+  y1=mean(Y1);y2=mean(Y2);y3=mean(Y3)
+  x1=mean(X1);x2=mean(X2);x3=mean(X3)
+  p1=sum((X1-x1)*(Y1-y1));p2=sum((X2-x2)*(Y2-y2));p3=sum((X3-x3)*(Y3-y3))
+  q1=sum((Y1-y1)^2);q2=sum((Y2-y2)^2);q3=sum((Y3-y3)^2)
+  r1=sum((X1-x1)^2);r2=sum((X2-x2)^2);r3=sum((X3-x3)^2)
+  S1=q1/(n1-2)-(p1^2)/((n1-2)*r1);S2=q2/(n2-2)-(p2^2)/((n2-2)*r2)
+  S3=q3/(n3-2)-(p3^2)/((n3-2)*r3)
+  bnu=p1+p2+p3;bdno=r1+r2+r3
+  b=bnu/bdno
+  a1=y1-b*x1;a2=y2-b*x2;a3=y3-b*x3
+  phinu=S1*r1+S2*r2+S3*r3
+  phidn=(r1+r2+r3)^2
+  phi=phinu/phidn
+  V1=(S1/n1 +S2/n2 +phi*(x1-x2)^2);V2=(S2/n2 +S3/n3 +phi*(x2-x3)^2)
+  T1=(a2-a1)/sqrt(V1);T2=(a3-a2)/sqrt(V2)
+  T=max(T1,T2)
+  out<-fun2(n1,n2,n3,b,S1,S2,S3)
+  a=0
+  if(T>out)
+    a=a+1
+  return(a)
+}
+fun4<-function(n1,n2,n3,mu1,mu2,mu3,p,v1,v2,v3)
+{
+  # find number of times maxt-T value > critical value among 1000 values
+  out<-replicate(1000,fun3(n1,n2,n3,mu1,mu2,mu3,p,v1,v2,v3))
+  p<-sum(out)/1000
+  return(p)
+}
+c<-replicate(5,fun4(10,15,20,0,0,0,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1,1.3,1.8,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*1.2,1.3*1.2,1.8*1.2,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*1.4,1.3*1.4,1.8*1.4,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*1.6,1.3*1.6,1.8*1.6,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*1.8,1.3*1.8,1.8*1.8,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*2,1.3*2,1.8*2,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*2.2,1.3*2.2,1.8*2.2,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*2.4,1.3*2.4,1.8*2.4,4,1,1,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*2.6,1.3*2.6,1.8*2.6,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*2.8,1.3*2.8,1.8*2.8,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*3,1.3*3,1.8*3,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*3.2,1.3*3.2,1.8*3.2,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*3.4,1.3*3.4,1.8*3.4,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*3.6,1.3*3.6,1.8*3.6,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*3.8,1.3*3.8,1.8*3.8,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*4,1.3*4,1.8*4,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*4.2,1.3*4.2,1.8*4.2,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*4.4,1.3*4.4,1.8*4.4,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*4.6,1.3*4.6,1.8*4.6,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*4.8,1.3*4.8,1.8*4.8,4,1,2,3))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,20,1*5,1.3*5,1.8*5,4,1,2,3))
+c;crit_value=mean(c);crit_value
+

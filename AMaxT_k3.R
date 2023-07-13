@@ -1,0 +1,285 @@
+library(MASS)
+library(smoothmest)
+library(mvtnorm)
+
+fun1<-function(n1,n2,n3,b1,b2,b3,p,v1,v2,v3)
+{
+  #X1=rnorm(n1,2,1);X2=rnorm(n2,2,1);X3=rnorm(n3,2,1)
+  #h1=10/(n1-1);h2=10/(n2-1);h3=5/(n3-1)
+  #X1=seq(-5,5,h1);X2=seq(-5,5,h2);X3=seq(0,5,h3)
+  h1=10/(n1-1);h2=10/(n2-1);h3=5/(n3-1)
+  #;h4=(-2/(n4-1))
+  X1=seq(-5,5,h1);X2=seq(-5,5,h2);X3=seq(0,5,h3)
+  #;X4=seq(-2,-4,h4)
+  #X1=runif(n1, 0, 5);X2=runif(n2,0,5);X3=runif(n3,0,5)
+  Y1=rnorm(n1,b1+p*X1,sqrt(v1));Y2=rnorm(n2,b2+p*X2,sqrt(v2))
+  Y3=rnorm(n3,b3+p*X3,sqrt(v3))
+  y1=mean(Y1);y2=mean(Y2);y3=mean(Y3)
+  x1=mean(X1);x2=mean(X2);x3=mean(X3)
+  p1=sum((X1-x1)*(Y1-y1));p2=sum((X2-x2)*(Y2-y2));p3=sum((X3-x3)*(Y3-y3))
+  q1=sum((Y1-y1)^2);q2=sum((Y2-y2)^2);q3=sum((Y3-y3)^2)
+  r1=sum((X1-x1)^2);r2=sum((X2-x2)^2);r3=sum((X3-x3)^2)
+  S1=q1/(n1-2)-(p1^2)/((n1-2)*r1);S2=q2/(n2-2)-(p2^2)/((n2-2)*r2)
+  S3=q3/(n3-2)-(p3^2)/((n3-2)*r3)
+  bnu=p1+p2+p3;bdno=r1+r2+r3
+  b=bnu/bdno
+  a1=y1-b*x1;a2=y2-b*x2;a3=y3-b*x3
+  phinu=S1*r1+S2*r2+S3*r3
+  phidn=(r1+r2+r3)^2
+  phi=phinu/phidn
+  V1=(S1/n1 +S2/n2 +phi*(x1-x2)^2);V2=(S2/n2 +S3/n3 +phi*(x2-x3)^2)
+  T1=(a2-a1)/sqrt(V1);T2=(a3-a2)/sqrt(V2)
+  T=max(T1,T2)
+  N=n1+n2+n3
+  nu1=n1/N;nu2=n2/N;nu3=n3/N
+  d12=sqrt(nu2*S1+nu1*S2);d23=sqrt(nu3*S2+nu2*S3)
+  f1=sqrt(nu1*nu3)*S2
+  x=c(d12,d23)
+  D=diag(x)
+  S=matrix(c(d12^2,-f1,-f1,d23^2),nrow=2,ncol=2,byrow=TRUE)
+  R=solve(D)%*%S%*%solve(D)
+  q=qmvnorm(0.95,tail="lower.tail",mean=0,sigma=R)$quantile
+  #For Max-T
+  z=0
+  if(T>q)
+  {
+    z=z+1
+  }
+  return(z)
+ 
+}
+fun4<-function(n1,n2,n3,b1,b2,b3,p,v1,v2,v3)
+{
+  # find the number of times statistic value is greater than the critical value among 1000 values
+  out<-replicate(1000,fun1(n1,n2,n3,b1,b2,b3,p,v1,v2,v3))
+  p<-sum(out)/1000
+  return(p)
+}
+
+c<-replicate(5,fun4(10,15,8,0,0,0,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1,1.5,2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.2,1.5*1.2,2*1.2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.4,1.5*1.4,2*1.4,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.6,1.5*1.6,2*1.6,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.8,1.5*1.8,2*1.8,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2,1.5*2,2*2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.2,1.5*2.2,2*2.2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.4,1.5*2.4,2*2.4,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.6,1.5*2.6,2*2.6,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.8,1.5*2.8,2*2.8,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3,1.5*3,2*3,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.2,1.5*3.2,2*3.2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.4,1.5*3.4,2*3.4,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.6,1.5*3.6,2*3.6,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.8,1.5*3.8,2*3.8,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4,1.5*4,2*4,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.2,1.5*4.2,2*4.2,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.4,1.5*4.4,2*4.4,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.6,1.5*4.6,2*4.6,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.8,1.5*4.8,2*4.8,4,8,4,1))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*5,1.5*5,2*5,4,8,4,1))
+c;crit_value=mean(c);crit_value
+
+
+c<-replicate(5,fun4(10,15,8,0,0,0,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1,1.5,2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.2,1.5*1.2,2*1.2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.4,1.5*1.4,2*1.4,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.6,1.5*1.6,2*1.6,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*1.8,1.5*1.8,2*1.8,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2,1.5*2,2*2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.2,1.5*2.2,2*2.2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.4,1.5*2.4,2*2.4,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.6,1.5*2.6,2*2.6,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*2.8,1.5*2.8,2*2.8,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3,1.5*3,2*3,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.2,1.5*3.2,2*3.2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.4,1.5*3.4,2*3.4,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.6,1.5*3.6,2*3.6,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*3.8,1.5*3.8,2*3.8,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4,1.5*4,2*4,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.2,1.5*4.2,2*4.2,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.4,1.5*4.4,2*4.4,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.6,1.5*4.6,2*4.6,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*4.8,1.5*4.8,2*4.8,4,1,4,8))
+c;crit_value=mean(c);crit_value
+c<-replicate(5,fun4(10,15,8,1*5,1.5*5,2*5,4,1,4,8))
+c;crit_value=mean(c);crit_value
+
+
+
+
+c<-replicate(4,fun4(10,12,14,0,0,0,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3,3.4,3.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*1.2,3.4*1.2,3.6*1.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*1.4,3.4*1.4,3.6*1.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*1.6,3.4*1.6,3.6*1.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*1.8,3.4*1.8,3.6*1.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*2,3.4*2,3.6*2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*2.2,3.4*2.2,3.6*2.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*2.4,3.4*2.4,3.6*2.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*2.6,3.4*2.6,3.6*2.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*2.8,3.4*2.8,3.6*2.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*3,3.4*3,3.6*3,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*3.2,3.4*3.2,3.6*3.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*3.4,3.4*3.4,3.6*3.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*3.6,3.4*3.6,3.6*3.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*3.8,3.4*3.8,3.6*3.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*4,3.4*4,3.6*4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*4.2,3.4*4.2,3.6*4.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*4.4,3.4*4.4,3.6*4.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*4.6,3.4*4.6,3.6*4.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*4.8,3.4*4.8,3.6*4.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*5,3.4*5,3.6*5,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*5.2,3.4*5.2,3.6*5.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*5.4,3.4*5.4,3.6*5.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*5.6,3.4*5.6,3.6*5.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*5.8,3.4*5.8,3.6*5.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*6,3.4*6,3.6*6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*6.2,3.4*6.2,3.6*5.2,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*6.4,3.4*6.4,3.6*6.4,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*6.6,3.4*6.6,3.6*6.6,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*6.8,3.4*6.8,3.6*6.8,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(10,12,14,3*7,3.4*7,3.6*7,6,3,2,2))
+crit_value=sum(c)/4;crit_value
+
+
+
+c<-replicate(4,fun4(80,80,80,0,0,0,2,1,1,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(80,80,80,0,0,0,2,1,2,3));c
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(80,80,80,0,0,0,2,4,8,8))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(80,80,80,0,0,0,2,1,9,9))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(80,80,80,0,0,0,2,9,9,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(80,80,80,0,0,0,2,1,7,6))
+crit_value=sum(c)/4;crit_value
+
+
+c<-replicate(4,fun4(8,10,15,0,0,0,2,1,1,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(8,10,15,0,0,0,2,1,2,3));c
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(8,10,15,0,0,0,2,4,8,8))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(8,10,15,0,0,0,2,1,9,9))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(8,10,15,0,0,0,2,9,9,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(8,10,15,0,0,0,2,1,7,6))
+crit_value=sum(c)/4;crit_value
+
+
+c<-replicate(4,fun4(30,40,45,0,0,0,2,1,1,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,40,45,0,0,0,2,1,2,3));c
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,40,45,0,0,0,2,4,8,8))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,40,45,0,0,0,2,1,9,9))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,40,45,0,0,0,2,9,9,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,40,45,0,0,0,2,1,7,6))
+crit_value=sum(c)/4;crit_value
+
+c<-replicate(4,fun4(20,20,25,0,0,0,2,1,1,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(20,20,25,0,0,0,2,1,2,3));c
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(20,20,25,0,0,0,2,4,8,8))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(20,20,25,0,0,0,2,1,9,9))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(20,20,25,0,0,0,2,9,9,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(20,20,25,0,0,0,2,1,7,6))
+crit_value=sum(c)/4;crit_value
+
+c<-replicate(4,fun4(30,25,25,0,0,0,2,1,1,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,25,25,0,0,0,2,1,2,3));c
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,25,25,0,0,0,2,4,8,8))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,25,25,0,0,0,2,1,9,9))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,25,25,0,0,0,2,9,9,1))
+crit_value=sum(c)/4;crit_value
+c<-replicate(4,fun4(30,25,25,0,0,0,2,1,7,6))
+crit_value=sum(c)/4;crit_value
